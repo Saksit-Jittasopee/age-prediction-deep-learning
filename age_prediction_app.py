@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
+import numpy as np
 
 class AgePredictorCNN(nn.Module):
     def __init__(self):
@@ -49,66 +50,52 @@ transform = transforms.Compose([
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 st.set_page_config(page_title="Age Prediction", layout="wide")
-st.title("Real-time Age Prediction")
+st.title("Age Prediction using Deep Learning")
 
-run_webcam = st.toggle("Open Webcam")
+img_file_buffer = st.camera_input("Take a picture to predict age")
 
-if run_webcam:
-    col_video, col_info = st.columns([3, 1])
+if img_file_buffer is not None:
+    bytes_data = img_file_buffer.getvalue()
+    cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
     
-    with col_video:
-        st.markdown("### 📷 Webcam")
-        video_placeholder = st.empty()
+    gray = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(40, 40))
+    
+    current_age = None
+    
+    for (x, y, w, h) in faces:
+        padding = 40
+        x_pad = max(0, x - padding)
+        y_pad = max(0, y - int(padding * 1.5))
+        w_pad = min(cv2_img.shape[1] - x_pad, w + (padding * 2))
+        h_pad = min(cv2_img.shape[0] - y_pad, h + int(padding * 2.5))
+
+        cv2.rectangle(cv2_img, (x_pad, y_pad), (x_pad + w_pad, y_pad + h_pad), (255, 0, 0), 2)
+        face_img = cv2_img[y_pad:y_pad + h_pad, x_pad:x_pad + w_pad]
+        
+        if face_img.size > 0:
+            try:
+                face_rgb = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
+                pil_image = Image.fromarray(face_rgb)
+                input_tensor = transform(pil_image).unsqueeze(0).to(device)
+                
+                with torch.no_grad():
+                    output = model(input_tensor)
+                    current_age = output.item()
+                    
+                cv2.putText(cv2_img, f"Age: {current_age:.1f}", (x_pad, y_pad-10), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            except Exception as e:
+                pass
+                
+    col_img, col_info = st.columns([3, 1])
+    
+    with col_img:
+        st.image(cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
         
     with col_info:
         st.markdown("### 📊 Prediction")
-        age_placeholder = st.empty() 
-
-    cap = cv2.VideoCapture(0)
-
-    while run_webcam:
-        ret, frame = cap.read()
-        if not ret:
-            st.error("Cannot read from webcam. Please check your camera.")
-            break
-            
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(40, 40))
-
-        current_age = None
-
-        for (x, y, w, h) in faces:
-            padding = 40
-            x_pad = max(0, x - padding)
-            y_pad = max(0, y - int(padding * 1.5))
-            w_pad = min(frame.shape[1] - x_pad, w + (padding * 2))
-            h_pad = min(frame.shape[0] - y_pad, h + int(padding * 2.5))
-
-            cv2.rectangle(frame, (x_pad, y_pad), (x_pad + w_pad, y_pad + h_pad), (255, 0, 0), 2)
-        
-            face_img = frame[y_pad:y_pad + h_pad, x_pad:x_pad + w_pad]
-            
-            if face_img.size > 0:
-                try:
-                    face_rgb = cv2.cvtColor(face_img, cv2.COLOR_BGR2RGB)
-                    pil_image = Image.fromarray(face_rgb)
-                    input_tensor = transform(pil_image).unsqueeze(0).to(device)
-                    
-                    with torch.no_grad():
-                        output = model(input_tensor)
-                        current_age = output.item()
-                        
-                    cv2.putText(frame, f"Age: {current_age:.1f}", (x_pad, y_pad-10), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-                except Exception as e:
-                    pass
-        
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        video_placeholder.image(frame_rgb, channels="RGB")
-        
         if current_age is not None:
-            age_placeholder.markdown(f"<h1 style='text-align: center; color: #4CAF50;'>{current_age:.1f} Years Old</h1>", unsafe_allow_html=True)
+            st.markdown(f"<h1 style='text-align: center; color: #4CAF50;'>{current_age:.1f} Years Old</h1>", unsafe_allow_html=True)
         else:
-            age_placeholder.markdown("<h3 style='text-align: center;'>No face detected</h3>", unsafe_allow_html=True)
-
-    cap.release()
+            st.markdown("<h3 style='text-align: center;'>Cannot detect face</h3>", unsafe_allow_html=True)

@@ -15,9 +15,9 @@
 
 ## 📋 About This Project
 
-**THAI:** โปรเจคนี้เกี่ยวกับการใช้ Deep Learning ในการบอกอายุของคนแบบ Real Time โดยใช้โมเดล CNN (Convolutional Neural Network) และ PyTorch ในการทำ Deep Learning โดยจะให้ Output เป็นแบบ Linear Regression ชุดข้อมูลมาจาก Kaggle ของ jangedoo (UTKFace) แอปพลิเคชันนี้จับวิดีโอจากเว็บแคม ตรวจจับใบหน้า และบอกอายุของใบหน้าที่ตรวจพบโดยใช้ CascadeClassifier (haarcascade_frontalface_default) OpenCV และแสดงผลลัพธ์โดยใช้ Streamlit ในการปรับใช้ในเว็บแอปพลิเคชัน
+**THAI:** โปรเจคนี้เกี่ยวกับการใช้ Deep Learning ในการบอกอายุของคนแบบถ่ายรูป โดยใช้โมเดล CNN (Convolutional Neural Network) และ PyTorch ในการทำ Deep Learning โดยจะให้ Output เป็นแบบ Linear Regression ชุดข้อมูลมาจาก Kaggle ของ jangedoo (UTKFace) แอปพลิเคชันนี้จับวิดีโอจากเว็บแคม ตรวจจับใบหน้า และบอกอายุของใบหน้าที่ตรวจพบโดยใช้ CascadeClassifier (haarcascade_frontalface_default) OpenCV และแสดงผลลัพธ์โดยใช้ Streamlit ในการปรับใช้ในเว็บแอปพลิเคชัน
 
-**ENG:** This project is about using deep learning to predict the age of people in real-time using a CNN (Convolutional Neural Network) and PyTorch. The output layer is a linear regression model. The dataset is from jangedoo's Kaggle (UTKFace). The application captures video from the webcam, detects faces, and predicts the age of the detected faces using CascadeClassifier (haarcascade_frontalface_default) from OpenCV, displaying the results using Streamlit to deploy the web application.
+**ENG:** This project is about using deep learning to predict the age of people in pictures using a CNN (Convolutional Neural Network) and PyTorch. The output layer is a linear regression model. The dataset is from jangedoo's Kaggle (UTKFace). The application captures video from the webcam, detects faces, and predicts the age of the detected faces using CascadeClassifier (haarcascade_frontalface_default) from OpenCV, displaying the results using Streamlit to deploy the web application.
 
 ## ✨ Output Examples in Code
 
