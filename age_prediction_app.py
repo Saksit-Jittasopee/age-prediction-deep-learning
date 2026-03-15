@@ -88,7 +88,7 @@ if img_file_buffer is not None:
             except Exception as e:
                 pass
                 
-    col_img, col_info = st.columns([3, 1])
+    col_img, col_info = st.columns([1, 1])
     
     with col_img:
         st.image(cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB), channels="RGB", use_container_width=True)
